@@ -34,7 +34,7 @@ const Signals = (() => {
     // Load persisted value if available
     if (persist && key) {
       const stored = localStorage.getItem(key);
-      if (stored !== null) {
+      if (stored !== null && stored !== undefined) {
         try {
           value = JSON.parse(stored);
         } catch (e) {
@@ -72,7 +72,7 @@ const Signals = (() => {
           }
         }
         // Track history
-        if (history) {
+        if (history && !signal._isUndoRedo) {
           historyTracker.push(value);
         }
         // Notify observers
@@ -90,15 +90,19 @@ const Signals = (() => {
     if (history) {
       signal.undo = () => {
         const previousState = historyTracker.undo();
-        if (previousState !== null) {
+        if (previousState !== null && previousState !== undefined) {
+          signal._isUndoRedo = true;
           signal(previousState);
+          signal._isUndoRedo = false;
         }
       };
 
       signal.redo = () => {
         const nextState = historyTracker.redo();
-        if (nextState !== null) {
+        if (nextState !== null && nextState !== undefined) {
+          signal._isUndoRedo = true;
           signal(nextState);
+          signal._isUndoRedo = false;
         }
       };
     }
@@ -185,7 +189,9 @@ const Signals = (() => {
     }
     // Push a new state to the history
     push(state) {
-      this.past.push(state);
+      // Clone state to avoid reference issues
+      const stateCopy = JSON.parse(JSON.stringify(state));
+      this.past.push(stateCopy);
       if (this.past.length > this.maxSize) {
         this.past.shift();
       }
@@ -193,21 +199,21 @@ const Signals = (() => {
     }
     // Undo the last state change
     undo() {
-      if (this.past.length > 0) {
-        const current = this.past.pop();
-        this.future.push(current);
-        return this.past[this.past.length - 1];
+      if (this.past.length <= 1) {
+        return null;
       }
-      return null;
+      const current = this.past.pop();
+      this.future.push(current);
+      return this.past[this.past.length - 1];
     }
     // Redo the last undone state change
     redo() {
-      if (this.future.length > 0) {
-        const state = this.future.pop();
-        this.past.push(state);
-        return state;
+      if (this.future.length === 0) {
+        return null;
       }
-      return null;
+      const state = this.future.pop();
+      this.past.push(state);
+      return state;
     }
   }
 

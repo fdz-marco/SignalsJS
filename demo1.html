@@ -18,6 +18,7 @@
       <strong>Double Counter (computed):</strong> <span id="double-counter"></span>
     </p>
     <button id="increment-btn">Increment</button>
+    <button id="decrement-btn">Decrement</button>
     <button id="undo-btn">Undo</button>
     <button id="redo-btn">Redo</button>
   </div>
@@ -26,7 +27,12 @@
   <script src="Signals.js"></script>
   <script>
     // Create a reactive signal with history tracking enabled
-    const counter = Signals.ref(0, { persist: true, key: 'counter', history: true, historySize: 10 });
+    const counter = Signals.ref(0, { 
+      persist: true, 
+      key: 'counter', 
+      history: true, 
+      historySize: 10 
+    });
 
     // Create a computed signal that doubles the counter value
     const doubleCounter = Signals.computed(() => counter() * 2);
@@ -44,6 +50,11 @@
     // Button event: increment the counter
     document.getElementById('increment-btn').addEventListener('click', () => {
       counter(counter() + 1);
+    });
+
+    // Button event: decrement the counter
+      document.getElementById('decrement-btn').addEventListener('click', () => {
+      counter(counter() - 1);
     });
 
     // Button event: undo last change (if available)
