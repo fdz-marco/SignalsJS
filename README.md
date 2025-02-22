@@ -12,7 +12,10 @@ Library is created with the purpose of have reactivity in small projects without
 - **Batch Updates:** Group multiple updates together with `batch()` so that effects run only once after all updates.
 - **Watchers:** Monitor changes to signals with `watch()`.
 - **Derived Signals:** Combine multiple signals into a single derived value with `derive()`.
-- **History Tracking:** Enable undo/redo functionality by tracking changes in a signal’s history.
+- **History Tracking:** Enable undo/redo functionality by tracking changes in a signal's history.
+- **Conditional Effects:** Execute effects based on conditions with `when()`.
+- **Async Computed Values:** Handle asynchronous computations with loading and error states using `asyncComputed()`.
+- **Debug Mode:** Debugging capabilities for signals.
 
 ## Installation
 
@@ -262,6 +265,90 @@ Real-world use cases for `derive`:
 - Game state calculations (e.g., player health + buffs + debuffs)
 - Form validation combining multiple field states
 - Dashboard metrics that depend on multiple data sources
+
+## `when(condition, callback)`
+
+Executes a callback function when a condition becomes true.
+
+### Parameters
+
+- **`condition`**:  
+A function that returns a boolean value, typically using signals.
+
+- **`callback`**:  
+The function to execute when the condition is true.
+
+### Usage Example
+
+```javascript
+// Execute when counter exceeds 10
+Signals.when(
+  () => counter() > 10,
+  () => console.log('Counter exceeded 10!')
+);
+```
+
+## `asyncComputed(computeFn)`
+
+Creates a computed value that handles asynchronous operations, including loading and error states.
+
+### Parameters
+
+- **`computeFn`**:  
+An async function that returns a Promise.
+
+### Return Value
+
+An object containing three signals:
+- **`signal`**: The computed value
+- **`loading`**: Boolean indicating if the computation is in progress
+- **`error`**: Any error that occurred during computation
+
+### Usage Example
+
+```javascript
+const { signal, loading, error } = Signals.asyncComputed(async () => {
+  const response = await fetch('https://api.example.com/data');
+  return response.json();
+});
+
+// Handle different states
+Signals.effect(() => {
+  if (loading()) {
+    console.log('Loading...');
+  } else if (error()) {
+    console.log('Error:', error());
+  } else {
+    console.log('Data:', signal());
+  }
+});
+```
+
+## Debug Mode
+
+Enable debugging capabilities for signals by passing the `debug` option.
+
+### Usage Example
+
+```javascript
+const count = Signals.ref(0, { debug: true });
+
+// Automatic logging
+count(); // [Debug] Getting value: 0
+count(5); // [Debug] Setting value: 5, [Debug] New value set: 5
+
+// Debug methods
+count.debug.log(); // Shows current value and number of observers
+count.debug.trace(); // Shows stack trace of updates
+count.debug.observers(); // Shows current observers
+count.debug.history(); // Shows history state if enabled
+```
+
+Debug mode provides:
+- Automatic logging of get/set operations
+- Stack traces for updates
+- Observer inspection
+- History state inspection (when history is enabled)
 
 # Differences between `computed` and `derive`
 

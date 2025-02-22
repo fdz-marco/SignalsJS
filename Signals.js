@@ -106,6 +106,43 @@ const Signals = (() => {
         }
       };
     }
+
+    // Debugging options
+    if (options.debug) {
+      signal.debug = {
+        log: () => {
+          console.log(`Signal value:`, value);
+          console.log(`Number of observers:`, observers.size);
+        },
+        trace: () => {
+          console.trace(`Signal update stack trace`);
+          console.log(`Current value:`, value);
+        },
+        observers: () => {
+          console.log(`Current observers:`, Array.from(observers));
+        },
+        history: history ? () => {
+          console.log(`History state:`, {
+            past: historyTracker.past,
+            future: historyTracker.future
+          });
+        } : null
+      };
+
+      // Debugging wrapper for signal
+      const originalSignal = signal;
+      return function debugSignal(newValue) {
+        if (arguments.length === 0) {
+          console.log(`[Debug] Getting value:`, value);
+          return originalSignal();
+        }
+        console.log(`[Debug] Setting value:`, newValue);
+        const result = originalSignal(newValue);
+        console.log(`[Debug] New value set:`, value);
+        return result;
+      };
+    }
+
     return signal;
   }
 
@@ -157,6 +194,35 @@ const Signals = (() => {
     const computeFn = args.pop();
     const deps = args;
     return computed(() => computeFn(...deps.map(dep => dep())));
+  }
+
+  // When function (conditional effect)
+  function when(condition, callback) {
+    return effect(() => {
+      if (condition()) callback();
+    });
+  }
+
+  // Async computed value
+  function asyncComputed(computeFn) {
+    const signal = ref(null);
+    const loading = ref(false);
+    const error = ref(null);
+
+    effect(async () => {
+      loading(true);
+      error(null);
+      try {
+        const result = await computeFn();
+        signal(result);
+      } catch (e) {
+        error(e);
+      } finally {
+        loading(false);
+      }
+    });
+
+    return { signal, loading, error };
   }
 
   // -------------------------------------------
@@ -223,7 +289,9 @@ const Signals = (() => {
     effect,
     batch,
     watch,
-    derive
+    derive,
+    when,
+    asyncComputed
   };
 })();
 
