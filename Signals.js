@@ -1,3 +1,14 @@
+/*
+/* ------------------------------------------------------------------------------
+/* ClassName: Signals JS
+/* What it does: Compact library for reactive programming in JavaScript.
+/* Author: Marco Fernandez (marcofdz.com)
+/* Version: 1.0.0
+/* License: MIT
+/* Repository: https://github.com/fdz-marco/SignalsJS
+/* ------------------------------------------------------------------------------
+*/
+
 const Signals = (() => {
   // This variable holds the current effect that's running
   let currentObserver = null;
