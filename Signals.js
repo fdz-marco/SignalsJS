@@ -130,11 +130,11 @@ const Signals = (() => {
   }
 
   // Batch updates
-  function batch(fn) {
-    if (isBatching) return fn();
+  function batch(batchFn) {
+    if (isBatching) return batchFn();
     isBatching = true;
     try {
-      fn();
+      batchFn();
     } finally {
       isBatching = false;
       const tasks = Array.from(batchQueue);
