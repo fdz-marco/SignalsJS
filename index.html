@@ -1,42 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <title>Signals JS Demo</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    button { margin-right: 10px; }
+  </style>
 </head>
 <body>
-  <h1>Counter Demo</h1>
-  <p>Counter: <span id="counter">0</span></p>
-  <p>Double Counter (Memo): <span id="doubleCounter">0</span></p>
-  <button id="decrease">-</button>
-  <button id="increase">+</button>
+  <h1>Signals JS Demo</h1>
+  <div>
+    <p>
+      <strong>Counter:</strong> <span id="counter-value"></span>
+    </p>
+    <p>
+      <strong>Double Counter (computed):</strong> <span id="double-counter"></span>
+    </p>
+    <button id="increment-btn">Increment</button>
+    <button id="undo-btn">Undo</button>
+    <button id="redo-btn">Redo</button>
+  </div>
+
+  <!-- Include the Signals JS library (ensure Signals.js is in the same directory) -->
   <script src="Signals.js"></script>
   <script>
-    // --- Usage Demo: Counter with Memo ---
-    // Create a reactive signal for the counter.
-    const counter = Signals.ref(0);
-    // Create a memo that computes double the counter.
+    // Create a reactive signal with history tracking enabled
+    const counter = Signals.ref(0, { persist: true, key: 'counter', history: true, historySize: 10 });
+
+    // Create a computed signal that doubles the counter value
     const doubleCounter = Signals.computed(() => counter() * 2);
 
-    // Get DOM elements to update.
-    const counterEl = document.getElementById("counter");
-    const doubleCounterEl = document.getElementById("doubleCounter");
-
-    // Use an effect to update the DOM whenever counter or memo changes.
+    // Effect: update the DOM whenever the counter changes
     Signals.effect(() => {
-      counterEl.textContent = counter();
-      doubleCounterEl.textContent = doubleCounter();
+      document.getElementById('counter-value').textContent = counter();
     });
 
-    // Set up button event listeners.
-    document.getElementById("increase").addEventListener("click", () => {
-      counter(counter() + 1);
-      console.log(counter())
+    // Effect: update the DOM with the computed double value
+    Signals.effect(() => {
+      document.getElementById('double-counter').textContent = doubleCounter();
     });
-    document.getElementById("decrease").addEventListener("click", () => {
-      counter(counter() - 1);
-      console.log(counter())
+
+    // Button event: increment the counter
+    document.getElementById('increment-btn').addEventListener('click', () => {
+      counter(counter() + 1);
+    });
+
+    // Button event: undo last change (if available)
+    document.getElementById('undo-btn').addEventListener('click', () => {
+      if (typeof counter.undo === "function") {
+        counter.undo();
+      }
+    });
+
+    // Button event: redo last undone change (if available)
+    document.getElementById('redo-btn').addEventListener('click', () => {
+      if (typeof counter.redo === "function") {
+        counter.redo();
+      }
+    });
+
+    // Additional example: log the computed value to the console whenever it changes
+    Signals.effect(() => {
+      console.log('Double Counter:', doubleCounter());
     });
   </script>
 </body>
