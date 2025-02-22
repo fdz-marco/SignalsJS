@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+  <h1>Counter Demo</h1>
+  <p>Counter: <span id="counter">0</span></p>
+  <p>Double Counter (Memo): <span id="doubleCounter">0</span></p>
+  <button id="decrease">-</button>
+  <button id="increase">+</button>
+  <script src="Signals.js"></script>
+  <script>
+    // --- Usage Demo: Counter with Memo ---
+    // Create a reactive signal for the counter.
+    const counter = Signals.ref(0);
+    // Create a memo that computes double the counter.
+    const doubleCounter = Signals.computed(() => counter() * 2);
+
+    // Get DOM elements to update.
+    const counterEl = document.getElementById("counter");
+    const doubleCounterEl = document.getElementById("doubleCounter");
+
+    // Use an effect to update the DOM whenever counter or memo changes.
+    Signals.effect(() => {
+      counterEl.textContent = counter();
+      doubleCounterEl.textContent = doubleCounter();
+    });
+
+    // Set up button event listeners.
+    document.getElementById("increase").addEventListener("click", () => {
+      counter(counter() + 1);
+      console.log(counter())
+    });
+    document.getElementById("decrease").addEventListener("click", () => {
+      counter(counter() - 1);
+      console.log(counter())
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reactive Multi-Signal Demo</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    section { margin-bottom: 2em; border-bottom: 1px solid #ccc; padding-bottom: 1em; }
+    input, select { margin: 0.5em 0; }
+  </style>
+</head>
+<body>
+  <h1>Reactive Multi-Signal Demo</h1>
+  
+  <!-- Calculator Section -->
+  <section id="calculator">
+    <h2>Calculator</h2>
+    <label for="num1">Number 1:</label>
+    <input type="number" id="num1" value="0">
+    <label for="operator">Operator:</label>
+    <select id="operator">
+      <option value="+">+</option>
+      <option value="-">-</option>
+      <option value="*">*</option>
+      <option value="/">/</option>
+    </select>
+    <label for="num2">Number 2:</label>
+    <input type="number" id="num2" value="0">
+    <p>Result: <span id="calcResult">0</span></p>
+  </section>
+
+  <!-- Greeting Section -->
+  <section id="greeting">
+    <h2>Greeting</h2>
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" placeholder="John">
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" placeholder="Doe">
+    <p>Greeting: <span id="greetingText">Hello!</span></p>
+  </section>
+
+  <!-- Multi-Counter Section -->
+  <section id="counters">
+    <h2>Fruit Counter</h2>
+    <p>
+      Apples: <span id="applesCount">0</span>
+      <button id="addApple">+</button>
+      <button id="removeApple">-</button>
+    </p>
+    <p>
+      Oranges: <span id="orangesCount">0</span>
+      <button id="addOrange">+</button>
+      <button id="removeOrange">-</button>
+    </p>
+    <p>Total Fruit: <span id="totalFruit">0</span></p>
+  </section>
+
+  <!-- Include Reactive Library -->
+  <script src="Signals.js"></script>
+  <script>
+    // ===== Calculator Section =====
+    const num1 = Signals.ref(0);
+    const num2 = Signals.ref(0);
+    const operator = Signals.ref('+');
+
+    // Memo: Computes the result based on the operator and numbers.
+    const calcResult = Signals.computed(() => {
+      const a = parseFloat(num1());
+      const b = parseFloat(num2());
+      switch(operator()) {
+        case '+': return a + b;
+        case '-': return a - b;
+        case '*': return a * b;
+        case '/': return b !== 0 ? a / b : 'Error';
+        default: return 'N/A';
+      }
+    });
+
+    // Update the calculator result in the DOM.
+    Signals.effect(() => {
+      document.getElementById('calcResult').textContent = calcResult();
+    });
+
+    document.getElementById('num1').addEventListener('input', e => {
+      num1(e.target.value);
+    });
+    document.getElementById('num2').addEventListener('input', e => {
+      num2(e.target.value);
+    });
+    document.getElementById('operator').addEventListener('change', e => {
+      operator(e.target.value);
+    });
+
+    // ===== Greeting Section =====
+    const firstName = Signals.ref('');
+    const lastName = Signals.ref('');
+
+    // Memo: Computes a greeting message.
+    const greetingText = Signals.computed(() => {
+      const f = firstName().trim();
+      const l = lastName().trim();
+      return (f || l) ? `Hello, ${f} ${l}`.trim() : 'Hello!';
+    });
+
+    // Update the greeting in the DOM.
+    Signals.effect(() => {
+      document.getElementById('greetingText').textContent = greetingText();
+    });
+
+    document.getElementById('firstName').addEventListener('input', e => {
+      firstName(e.target.value);
+    });
+    document.getElementById('lastName').addEventListener('input', e => {
+      lastName(e.target.value);
+    });
+
+    // ===== Multi-Counter Section =====
+    const apples = Signals.ref(0);
+    const oranges = Signals.ref(0);
+
+    // Memo: Computes the total fruit count.
+    const totalFruit = Signals.computed(() => {
+      return apples() + oranges();
+    });
+
+    // Update fruit counters in the DOM.
+    Signals.effect(() => {
+      document.getElementById('applesCount').textContent = apples();
+      document.getElementById('orangesCount').textContent = oranges();
+      document.getElementById('totalFruit').textContent = totalFruit();
+    });
+
+    document.getElementById('addApple').addEventListener('click', () => {
+      apples(apples() + 1);
+    });
+    document.getElementById('removeApple').addEventListener('click', () => {
+      apples(apples() - 1);
+    });
+    document.getElementById('addOrange').addEventListener('click', () => {
+      oranges(oranges() + 1);
+    });
+    document.getElementById('removeOrange').addEventListener('click', () => {
+      oranges(oranges() - 1);
+    });
+  </script>
+</body>
+</html>
+
